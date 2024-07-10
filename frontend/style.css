@@ -1,14 +1,14 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-body{
+
+body {
     background-color: rgb(24, 24, 24);
 }
 
-nav{
-
+nav {
     padding: 10px;
     height: 75px;
     width: 100%;
@@ -22,28 +22,28 @@ nav{
     color: whitesmoke;
 }
 
-.logo{
+.logo {
     display: flex;
 }
-.pre{
+
+.pre {
     color: goldenrod;
 }
 
-
-.search{
-    /* background-color: aqua; */
+.search {
     display: flex;
     justify-content: space-around;
     align-items: center;
 }
 
-input{
+input {
     width: 400px;
     height: 30px;
     border-radius: 10px;
     outline: none;
 }
-button{
+
+button {
     background-color: goldenrod;
     font-size: 16px;
     width: 100px;
@@ -52,19 +52,41 @@ button{
     outline: none;
 }
 
-hr{
+hr {
     border: none;
     border-top: 2px solid goldenrod;
-
 }
 
-main{
+main {
     height: calc(100vh - 75px);
-    /* width: calc(100vw - 100px); */
     background-color: black;
-    /* margin: 10px; */
     color: white;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Style for the movie result division */
+.movie-result {
+    display: flex;
+    align-items: flex-start;
+    margin: 20px 0;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    width: 80%;
+    background-color: #333;
+}
+
+/* Style for the movie poster */
+.movie-poster {
+    max-width: 150px;
+    margin-right: 20px;
+}
+
+/* Style for the movie info */
+.movie-info {
+    flex-grow: 1;
 }
