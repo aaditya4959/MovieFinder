@@ -90,3 +90,22 @@ main {
 .movie-info {
     flex-grow: 1;
 }
+
+
+#pagination button {
+    background-color: goldenrod;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 0 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#pagination button:hover {
+    background-color: #d4a017;
+}
+#pagination .active {
+    background-color: #d4a017;
+    color: black;
+}

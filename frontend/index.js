@@ -1,6 +1,6 @@
 const apiKey = `af7edb53`;
-let dataReq = `http://www.omdbapi.com/?apikey=${apiKey}&t=`;
-let posterReq = `http://img.omdbapi.com/?apikey=${apiKey}&`;
+let dataReq = `http://www.omdbapi.com/?apikey=${apiKey}&s=`;
+let detailReq = `http://www.omdbapi.com/?apikey=${apiKey}&i=`;
 
 async function fetchMovieData(url) {
     try {
@@ -19,42 +19,114 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
     event.preventDefault(); // Prevent the form from submitting in the traditional way
     const searchQuery = document.getElementById('search').value;
     if (!searchQuery) {
-        event.preventDefault(); // Prevent form submission
         alert('Search field is required!');
-      }
-    else{
-        const movieInfo = await fetchMovieData(dataReq + searchQuery);
+    } else {
+        const url = new URL(window.location);
+        url.searchParams.set('q', searchQuery);
+        url.searchParams.set('page', 1);
+        window.history.pushState({}, '', url);
+        await performSearch(searchQuery, 1);
+    }
+});
 
-        if (movieInfo) {
-            const display = document.getElementById('display');
-            display.innerHTML = ''; // Clear previous results
+async function performSearch(query, page) {
+    const movieList = await fetchMovieData(`${dataReq}${query}&page=${page}`);
+    if (movieList && movieList.Search) {
+        const display = document.getElementById('display');
+        display.innerHTML = ''; // Clear previous results
 
-            // Create a new division for the movie result
-            const movieDiv = document.createElement('div');
-            movieDiv.classList.add('movie-result');
+        for (const movie of movieList.Search) {
+            const movieDetails = await fetchMovieData(detailReq + movie.imdbID);
+            if (movieDetails) {
+                const movieDiv = document.createElement('div');
+                movieDiv.classList.add('movie-result');
 
-            // Create the poster element
-            const posterImg = document.createElement('img');
-            posterImg.src = movieInfo.Poster;
-            posterImg.alt = movieInfo.Title + ' Poster';
-            posterImg.classList.add('movie-poster');
+                const posterImg = document.createElement('img');
+                posterImg.src = movieDetails.Poster;
+                posterImg.alt = movieDetails.Title + ' Poster';
+                posterImg.classList.add('movie-poster');
 
-            // Create the info element
-            const infoDiv = document.createElement('div');
-            infoDiv.classList.add('movie-info');
-            infoDiv.innerHTML = `
-                <h2>${movieInfo.Title}</h2>
-                <p><strong>Year:</strong> ${movieInfo.Year}</p>
-                <p><strong>Genre:</strong> ${movieInfo.Genre}</p>
-                <p><strong>Director:</strong> ${movieInfo.Director}</p>
-                <p><strong>Plot:</strong> ${movieInfo.Plot}</p>
-            `;
+                const infoDiv = document.createElement('div');
+                infoDiv.classList.add('movie-info');
+                infoDiv.innerHTML = `
+                    <h2>${movieDetails.Title}</h2>
+                    <p><strong>Year:</strong> ${movieDetails.Year}</p>
+                    <p><strong>Genre:</strong> ${movieDetails.Genre}</p>
+                    <p><strong>Director:</strong> ${movieDetails.Director}</p>
+                    <p><strong>Cast:</strong> ${movieDetails.Actors}</p>
+                    <p><strong>Plot:</strong> ${movieDetails.Plot}</p>
+                `;
 
-            // Append poster and info to the movie result division
-            movieDiv.appendChild(posterImg);
-            movieDiv.appendChild(infoDiv);
+                movieDiv.appendChild(posterImg);
+                movieDiv.appendChild(infoDiv);
+                display.appendChild(movieDiv);
+            }
+        }
 
-            // Append the movie result division to the display
-            display.appendChild(movieDiv);
-    }}
+        setupPagination(query, page, movieList.totalResults);
+    }
+}
+
+function setupPagination(query, currentPage, totalResults) {
+    const paginationDiv = document.getElementById('pagination');
+    paginationDiv.innerHTML = ''; // Clear previous pagination
+
+    const totalPages = Math.ceil(totalResults / 10);
+    const maxVisiblePages = 4;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.innerText = '<<';
+        prevButton.addEventListener('click', () => {
+            const url = new URL(window.location);
+            url.searchParams.set('q', query);
+            url.searchParams.set('page', currentPage - 1);
+            window.history.pushState({}, '', url);
+            performSearch(query, currentPage - 1);
+        });
+        paginationDiv.appendChild(prevButton);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.innerText = i;
+        if (i === currentPage) {
+            pageButton.classList.add('active');
+        }
+        pageButton.addEventListener('click', () => {
+            const url = new URL(window.location);
+            url.searchParams.set('q', query);
+            url.searchParams.set('page', i);
+            window.history.pushState({}, '', url);
+            performSearch(query, i);
+        });
+        paginationDiv.appendChild(pageButton);
+    }
+
+    if (currentPage < totalPages) {
+        const nextButton = document.createElement('button');
+        nextButton.innerText = '>>';
+        nextButton.addEventListener('click', () => {
+            const url = new URL(window.location);
+            url.searchParams.set('q', query);
+            url.searchParams.set('page', currentPage + 1);
+            window.history.pushState({}, '', url);
+            performSearch(query, currentPage + 1);
+        });
+        paginationDiv.appendChild(nextButton);
+    }
+}
+
+// Handle URL parameters
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('q');
+    const page = parseInt(urlParams.get('page')) || 1;
+
+    if (query) {
+        document.getElementById('search').value = query;
+        await performSearch(query, page);
+    }
 });
