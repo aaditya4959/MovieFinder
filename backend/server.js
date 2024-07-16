@@ -17,7 +17,7 @@ app.use('/', express.static(path.join(__dirname, '/public')));
 
 
 app.get("/" , (req,res) => {
-    const data = fs.readFileSync(path.join(__dirname,"public","index.html"));
+    const data = fs.readFileSync(path.join(__dirname,"views","index.html"));
     res.end(data);
 })
 
